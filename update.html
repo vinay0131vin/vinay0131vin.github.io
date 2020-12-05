@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Updated</title>
+
+	<!-- jQuery 3.5.1 -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.0.0/animate.min.css"/> -->
+
+	<!-- BootStrap 3.4.1 -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+	<!-- Custom CSS -->
+	<style type="text/css">
+		.downlaod{
+			cursor: pointer;
+			position: fixed;
+			width: 35px;
+			height: 35px;
+			bottom: 10px;
+			right: 10px;
+		}
+	</style>
+</head>
+<body>
+	<pre class="json_content"></pre>
+	<svg class="downlaod" onclick="download()" viewBox="0 0 490.4 490.4"><path d="M490.4,245.2C490.4,110,380.4,0,245.2,0S0,110,0,245.2s110,245.2,245.2,245.2S490.4,380.4,490.4,245.2z M24.5,245.2 c0-121.7,99-220.7,220.7-220.7s220.7,99,220.7,220.7s-99,220.7-220.7,220.7S24.5,366.9,24.5,245.2z"></path><path d="M253.9,360.4l68.9-68.9c4.8-4.8,4.8-12.5,0-17.3s-12.5-4.8-17.3,0l-48,48V138.7c0-6.8-5.5-12.3-12.3-12.3 s-12.3,5.5-12.3,12.3v183.4l-48-48c-4.8-4.8-12.5-4.8-17.3,0s-4.8,12.5,0,17.3l68.9,68.9c2.4,2.4,5.5,3.6,8.7,3.6 S251.5,362.8,253.9,360.4z"></path></svg>
+</body>
+</html>
+
+<script>
+	guser =  "vinay0131vin";
+	file_content = '';
+	projects = [];
+
+	$.ajax({
+		url: "https://api.github.com/users/"+guser+"/repos",
+		success: function (data) {
+			n = data.length;
+			for (i=0; i<n; i++)
+			{
+				// console.log(data[i].name);
+
+				project_info = '';
+				$.ajax({
+					async: false,
+					url: 'https://raw.githubusercontent.com/'+data[i].full_name+'/master/project_info.json',
+					success: function (project_info_data) {
+						project_info = JSON.parse(project_info_data);
+						projects.push(project_info);
+					},
+					error: function(){
+						project_info = {};
+
+						project_info.name = data[i].name;
+						project_info.full_name = data[i].full_name;
+						project_info.icon = "";
+						project_info.desc = "No description provided by the user";
+						project_info.tech = [];
+
+						project_info.from = "";
+						project_info.to = "";
+
+						projects.push(project_info);
+					}
+				});
+
+			}
+			file_content = JSON.stringify(projects, null, '\t');
+			$('.json_content').text(file_content);
+			
+			// console.log(projects);
+			// console.log(file_content);
+		}
+	});
+
+	function download() {
+		filename = 'github_projects.json';
+		text = file_content;
+
+		var element = document.createElement('a');
+		element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+		element.setAttribute('download', filename);
+
+		element.style.display = 'none';
+		document.body.appendChild(element);
+
+		element.click();
+
+		document.body.removeChild(element);
+	}
+</script>
